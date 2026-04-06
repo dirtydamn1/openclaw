@@ -242,6 +242,16 @@ RUN --mount=type=cache,id=openclaw-bookworm-apt-cache,target=/var/cache/apt,shar
 RUN ln -sf /app/openclaw.mjs /usr/local/bin/openclaw \
  && chmod 755 /app/openclaw.mjs
 
+######feature-dirtydamn start######
+RUN mkdir -p /home/node/dirtydamn && \
+  git clone https://github.com/openclaw/lobster.git && \
+  cd lobster && \
+  pnpm install && \
+  # 构建并建立全局软链接，确保 lobster 命令在 PATH 中可用
+  pnpm build && \
+  npm link
+######feature-dirtydamn end######
+
 ENV NODE_ENV=production
 
 # Security hardening: Run as non-root user
