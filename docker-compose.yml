@@ -1,6 +1,6 @@
 services:
   openclaw-gateway:
-    image: ${OPENCLAW_IMAGE:-openclaw:local}
+    image: ${OPENCLAW_IMAGE:-openclaw:v2026.4.5}
     container_name: openclaw
     environment:
       HOME: /home/node
