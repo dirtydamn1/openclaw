@@ -85,7 +85,7 @@ describe("browser server-context ensureBrowserAvailable", () => {
       PROFILE_ATTACH_RETRY_TIMEOUT_MS,
       {
         allowPrivateNetwork: true,
-      }
+      },
     );
     expect(launchOpenClawChrome).not.toHaveBeenCalled();
     expect(stopOpenClawChrome).not.toHaveBeenCalled();
