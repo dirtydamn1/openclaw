@@ -18,7 +18,7 @@ export OPENCLAW_TZ=Asia/Shanghai
 export OPENCLAW_GATEWAY_BIND=lan
 # 启用沙箱，需要将docker.sock映射给openclaw容器，宿主机运行stat -c '%g' /var/run/docker.sock
 # export DOCKER_GID=990
-export DOCKER_GID=990
+export DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
 # docker操作工具，这会安装/usr/bin/docker 
 export OPENCLAW_INSTALL_DOCKER_CLI=1
 # export OPENCLAW_SANDBOX=1
