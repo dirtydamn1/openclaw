@@ -1,28 +1,22 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   appendNarrativeEntry,
+  buildBackfillDiaryEntry,
   buildDiaryEntry,
   buildNarrativePrompt,
   extractNarrativeText,
   formatNarrativeDate,
+  formatBackfillDiaryDate,
   generateAndAppendDreamNarrative,
+  removeBackfillDiaryEntries,
   type NarrativePhaseData,
+  writeBackfillDiaryEntries,
 } from "./dreaming-narrative.js";
+import { createMemoryCoreTestHarness } from "./test-helpers.js";
 
-const tempDirs: string[] = [];
-
-async function createTempWorkspace(): Promise<string> {
-  const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-dreaming-narrative-"));
-  tempDirs.push(workspaceDir);
-  return workspaceDir;
-}
-
-afterEach(async () => {
-  await Promise.all(tempDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true })));
-});
+const { createTempWorkspace } = createMemoryCoreTestHarness();
 
 describe("buildNarrativePrompt", () => {
   it("builds a prompt from snippets only", () => {
@@ -127,9 +121,118 @@ describe("buildDiaryEntry", () => {
   });
 });
 
+describe("backfill diary entries", () => {
+  it("formats a backfill date without time", () => {
+    expect(formatBackfillDiaryDate("2026-01-01", "UTC")).toBe("January 1, 2026");
+  });
+
+  it("preserves the iso day label in high-positive-offset timezones", () => {
+    expect(formatBackfillDiaryDate("2026-01-01", "Pacific/Kiritimati")).toBe("January 1, 2026");
+  });
+
+  it("builds a marked backfill diary entry", () => {
+    const entry = buildBackfillDiaryEntry({
+      isoDay: "2026-01-01",
+      sourcePath: "memory/2026-01-01.md",
+      bodyLines: ["What Happened", "1. A durable preference appeared."],
+      timezone: "UTC",
+    });
+    expect(entry).toContain("*January 1, 2026*");
+    expect(entry).toContain("openclaw:dreaming:backfill-entry");
+    expect(entry).toContain("What Happened");
+  });
+
+  it("writes and replaces backfill diary entries", async () => {
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-backfill-");
+    const first = await writeBackfillDiaryEntries({
+      workspaceDir,
+      timezone: "UTC",
+      entries: [
+        {
+          isoDay: "2026-01-01",
+          sourcePath: "memory/2026-01-01.md",
+          bodyLines: ["What Happened", "1. First pass."],
+        },
+      ],
+    });
+    expect(first.written).toBe(1);
+    expect(first.replaced).toBe(0);
+
+    const second = await writeBackfillDiaryEntries({
+      workspaceDir,
+      timezone: "UTC",
+      entries: [
+        {
+          isoDay: "2026-01-02",
+          sourcePath: "memory/2026-01-02.md",
+          bodyLines: ["Reflections", "1. Second pass."],
+        },
+      ],
+    });
+    expect(second.written).toBe(1);
+    expect(second.replaced).toBe(1);
+
+    const content = await fs.readFile(path.join(workspaceDir, "DREAMS.md"), "utf-8");
+    expect(content).not.toContain("First pass.");
+    expect(content).toContain("Second pass.");
+    expect(content.match(/openclaw:dreaming:backfill-entry/g)?.length).toBe(1);
+  });
+
+  it("removes only backfill diary entries", async () => {
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-backfill-");
+    await appendNarrativeEntry({
+      workspaceDir,
+      narrative: "Keep this real dream.",
+      nowMs: Date.parse("2026-04-05T03:00:00Z"),
+      timezone: "UTC",
+    });
+    await writeBackfillDiaryEntries({
+      workspaceDir,
+      timezone: "UTC",
+      entries: [
+        {
+          isoDay: "2026-01-01",
+          sourcePath: "memory/2026-01-01.md",
+          bodyLines: ["What Happened", "1. Remove this backfill."],
+        },
+      ],
+    });
+
+    const removed = await removeBackfillDiaryEntries({ workspaceDir });
+    expect(removed.removed).toBe(1);
+
+    const content = await fs.readFile(path.join(workspaceDir, "DREAMS.md"), "utf-8");
+    expect(content).toContain("Keep this real dream.");
+    expect(content).not.toContain("Remove this backfill.");
+  });
+
+  it("refuses to overwrite a symlinked DREAMS.md during backfill writes", async () => {
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-backfill-");
+    const targetPath = path.join(workspaceDir, "outside.txt");
+    const dreamsPath = path.join(workspaceDir, "DREAMS.md");
+    await fs.writeFile(targetPath, "outside\n", "utf-8");
+    await fs.symlink(targetPath, dreamsPath);
+
+    await expect(
+      writeBackfillDiaryEntries({
+        workspaceDir,
+        timezone: "UTC",
+        entries: [
+          {
+            isoDay: "2026-01-01",
+            sourcePath: "memory/2026-01-01.md",
+            bodyLines: ["What Happened", "1. First pass."],
+          },
+        ],
+      }),
+    ).rejects.toThrow("Refusing to write symlinked DREAMS.md");
+    await expect(fs.readFile(targetPath, "utf-8")).resolves.toBe("outside\n");
+  });
+});
+
 describe("appendNarrativeEntry", () => {
   it("creates DREAMS.md with diary header on fresh workspace", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const dreamsPath = await appendNarrativeEntry({
       workspaceDir,
       narrative: "Fragments of authentication logic kept surfacing.",
@@ -145,7 +248,7 @@ describe("appendNarrativeEntry", () => {
   });
 
   it("appends a second entry within the diary markers", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     await appendNarrativeEntry({
       workspaceDir,
       narrative: "First dream.",
@@ -172,7 +275,7 @@ describe("appendNarrativeEntry", () => {
   });
 
   it("prepends diary before existing managed blocks", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const dreamsPath = path.join(workspaceDir, "DREAMS.md");
     await fs.writeFile(
       dreamsPath,
@@ -194,7 +297,7 @@ describe("appendNarrativeEntry", () => {
   });
 
   it("reuses existing dreams file when present", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const dreamsPath = path.join(workspaceDir, "DREAMS.md");
     await fs.writeFile(dreamsPath, "# Existing\n", "utf-8");
     const result = await appendNarrativeEntry({
@@ -235,7 +338,7 @@ describe("generateAndAppendDreamNarrative", () => {
   }
 
   it("generates narrative and writes diary entry", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const subagent = createMockSubagent("The repository whispered of forgotten endpoints.");
     const logger = createMockLogger();
 
@@ -264,7 +367,7 @@ describe("generateAndAppendDreamNarrative", () => {
   });
 
   it("skips narrative when no snippets are available", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const subagent = createMockSubagent("Should not appear.");
     const logger = createMockLogger();
 
@@ -284,7 +387,7 @@ describe("generateAndAppendDreamNarrative", () => {
   });
 
   it("handles subagent timeout gracefully", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const subagent = createMockSubagent("");
     subagent.waitForRun.mockResolvedValue({ status: "timeout" });
     const logger = createMockLogger();
@@ -306,7 +409,7 @@ describe("generateAndAppendDreamNarrative", () => {
   });
 
   it("handles subagent error gracefully", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const subagent = createMockSubagent("");
     subagent.run.mockRejectedValue(new Error("connection failed"));
     const logger = createMockLogger();
@@ -323,7 +426,7 @@ describe("generateAndAppendDreamNarrative", () => {
   });
 
   it("cleans up session even on failure", async () => {
-    const workspaceDir = await createTempWorkspace();
+    const workspaceDir = await createTempWorkspace("openclaw-dreaming-narrative-");
     const subagent = createMockSubagent("");
     subagent.getSessionMessages.mockRejectedValue(new Error("fetch failed"));
     const logger = createMockLogger();
