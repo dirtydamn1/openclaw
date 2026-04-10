@@ -259,6 +259,7 @@ RUN mkdir -p /home/node/dirtydamn && \
   # 构建并建立全局软链接，确保 lobster 命令在 PATH 中可用
   pnpm build && \
   npm link
+RUN pnpm add -g clawhub
 ######feature-dirtydamn end######
 
 ENV NODE_ENV=production
