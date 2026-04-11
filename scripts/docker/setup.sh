@@ -471,22 +471,31 @@ upsert_env "$ENV_FILE" \
   OPENCLAW_ALLOW_INSECURE_PRIVATE_WS \
   OPENCLAW_TZ
 
-if [[ "$IMAGE_NAME" == "openclaw:local" ]]; then
-  echo "==> Building Docker image: $IMAGE_NAME"
-  run_docker_build \
-    --build-arg "OPENCLAW_DOCKER_APT_PACKAGES=${OPENCLAW_DOCKER_APT_PACKAGES}" \
-    --build-arg "OPENCLAW_EXTENSIONS=${OPENCLAW_EXTENSIONS}" \
-    --build-arg "OPENCLAW_INSTALL_DOCKER_CLI=${OPENCLAW_INSTALL_DOCKER_CLI:-}" \
-    -t "$IMAGE_NAME" \
-    -f "$ROOT_DIR/Dockerfile" \
-    "$ROOT_DIR"
-else
-  echo "==> Pulling Docker image: $IMAGE_NAME"
-  if ! docker pull "$IMAGE_NAME"; then
-    echo "ERROR: Failed to pull image $IMAGE_NAME. Please check the image name and your access permissions." >&2
-    exit 1
-  fi
-fi
+echo "==> Building Docker image: $IMAGE_NAME"
+run_docker_build \
+  --build-arg "OPENCLAW_DOCKER_APT_PACKAGES=${OPENCLAW_DOCKER_APT_PACKAGES}" \
+  --build-arg "OPENCLAW_EXTENSIONS=${OPENCLAW_EXTENSIONS}" \
+  --build-arg "OPENCLAW_INSTALL_DOCKER_CLI=${OPENCLAW_INSTALL_DOCKER_CLI:-}" \
+  -t "$IMAGE_NAME" \
+  -f "$ROOT_DIR/Dockerfile" \
+  "$ROOT_DIR"
+
+#if [[ "$IMAGE_NAME" == "openclaw:local" ]]; then
+#  echo "==> Building Docker image: $IMAGE_NAME"
+#  run_docker_build \
+#    --build-arg "OPENCLAW_DOCKER_APT_PACKAGES=${OPENCLAW_DOCKER_APT_PACKAGES}" \
+#    --build-arg "OPENCLAW_EXTENSIONS=${OPENCLAW_EXTENSIONS}" \
+#    --build-arg "OPENCLAW_INSTALL_DOCKER_CLI=${OPENCLAW_INSTALL_DOCKER_CLI:-}" \
+#    -t "$IMAGE_NAME" \
+#    -f "$ROOT_DIR/Dockerfile" \
+#    "$ROOT_DIR"
+#else
+#  echo "==> Pulling Docker image: $IMAGE_NAME"
+#  if ! docker pull "$IMAGE_NAME"; then
+#    echo "ERROR: Failed to pull image $IMAGE_NAME. Please check the image name and your access permissions." >&2
+#    exit 1
+#  fi
+#fi
 
 # Ensure bind-mounted data directories are writable by the container's `node`
 # user (uid 1000). Host-created dirs inherit the host user's uid which may
