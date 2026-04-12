@@ -252,6 +252,7 @@ RUN ln -sf /app/openclaw.mjs /usr/local/bin/openclaw \
  && chmod 755 /app/openclaw.mjs
 
 ######feature-dirtydamn start######
+# 安装lobster
 RUN mkdir -p /home/node/dirtydamn && \
   git clone https://github.com/openclaw/lobster.git && \
   cd lobster && \
@@ -259,6 +260,10 @@ RUN mkdir -p /home/node/dirtydamn && \
   # 构建并建立全局软链接，确保 lobster 命令在 PATH 中可用
   pnpm build && \
   npm link
+# 配置pnpm
+ENV PNPM_HOME="/home/node/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"
 ######feature-dirtydamn end######
 
 ENV NODE_ENV=production
@@ -267,6 +272,11 @@ ENV NODE_ENV=production
 # The node:24-bookworm image includes a 'node' user (uid 1000)
 # This reduces the attack surface by preventing container escape via root privileges
 USER node
+
+######feature-dirtydamn start######
+# 安装clawhub和mcporter
+RUN pnpm add -g clawhub mcporter
+######feature-dirtydamn end######
 
 # Start gateway server with default config.
 # Binds to loopback (127.0.0.1) by default for security.
