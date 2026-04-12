@@ -274,8 +274,10 @@ ENV NODE_ENV=production
 USER node
 
 ######feature-dirtydamn start######
+RUN pnpm config set global-bin-dir "$PNPM_HOME"
 # 安装clawhub和mcporter
-RUN pnpm add -g clawhub mcporter
+RUN pnpm add -g clawhub mcporter 
+RUN ls -l $PNPM_HOME
 ######feature-dirtydamn end######
 
 # Start gateway server with default config.
