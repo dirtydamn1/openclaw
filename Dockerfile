@@ -272,6 +272,7 @@ USER node
 ######feature-dirtydamn start######
 # 配置pnpm
 ENV PNPM_HOME="/home/node/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"  \
     && echo 'export PNPM_HOME="/home/node/.local/share/pnpm"' >> ~/.bashrc  \
     && echo 'PATH="$PNPM_HOME:$PATH"' >> ~/.bashrc  \
