@@ -275,7 +275,7 @@ ENV PNPM_HOME="/home/node/.local/share/pnpm"
 RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"  \
     && echo 'export PNPM_HOME="/home/node/.local/share/pnpm"' >> ~/.bashrc  \
     && echo 'PATH="$PNPM_HOME:$PATH"' >> ~/.bashrc  \
-    && source ~/.bashrc
+    && . ~/.bashrc
 RUN pnpm config set global-bin-dir "$PNPM_HOME"
 # 安装clawhub
 RUN pnpm add -g clawhub
