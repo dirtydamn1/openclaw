@@ -260,10 +260,6 @@ RUN mkdir -p /home/node/dirtydamn && \
   # 构建并建立全局软链接，确保 lobster 命令在 PATH 中可用
   pnpm build && \
   npm link
-# 配置pnpm
-ENV PNPM_HOME="/home/node/.local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"
 ######feature-dirtydamn end######
 
 ENV NODE_ENV=production
@@ -274,8 +270,12 @@ ENV NODE_ENV=production
 USER node
 
 ######feature-dirtydamn start######
-RUN echo 'export PNPM_HOME="/home/node/.local/share/pnpm"' >> ~/.bashrc
-RUN 'PATH="$PNPM_HOME:$PATH"' >> ~/.bashrc
+# 配置pnpm
+ENV PNPM_HOME="/home/node/.local/share/pnpm"
+RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"  \
+    && echo 'export PNPM_HOME="/home/node/.local/share/pnpm"' >> ~/.bashrc  \
+    && echo 'PATH="$PNPM_HOME:$PATH"' >> ~/.bashrc  \
+    && source ~/.bashrc
 RUN pnpm config set global-bin-dir "$PNPM_HOME"
 # 安装clawhub
 RUN pnpm add -g clawhub
