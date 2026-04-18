@@ -281,7 +281,26 @@ RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"  \
 RUN pnpm config set global-bin-dir "$PNPM_HOME"
 # 安装clawhub
 RUN pnpm add -g clawhub
-
+# 安装jdk
+# 防止每次打包都需要下载jdk，直接进入容器安装，安装到~/.openclaw，这个目录是挂载在docker卷上的
+# mkdir -p ~/.openclaw/myDownload
+# cd ~/.openclaw/myDownload
+# JDK_NAME=zulu21.42.19-ca-jdk21.0.7-linux_x64
+# curl -fkSOL https://cdn.azul.com/zulu/bin/${JDK_NAME}.tar.gz
+# mkdir -p ~/.openclaw/jdk && tar -zxf ${JDK_NAME}.tar.gz -C ~/.openclaw/jdk 
+RUN echo -e 'export JAVA_21_HOME=/home/node/.openclaw/jdk/zulu21.42.19-ca-jdk21.0.7-linux_x64' >> ~/.bashrc  \
+    && echo -e "alias java21='export PATH=$JAVA_21_HOME/bin:$PATH'" >> ~/.bashrc  \
+    && echo -e 'java21' >> ~/.bashrc  \
+    && . ~/.bashrc 
+# 安装maven
+# mkdir -p ~/.openclaw/myDownload
+# cd ~/.openclaw/myDownload
+# MAVEN_NAME=apache-maven-3.8.8
+# curl -fkSOL https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.8/${MAVEN_NAME}-bin.tar.gz
+# mkdir -p ~/.openclaw/maven && tar -zxf ${MAVEN_NAME}-bin.tar.gz -C ~/.openclaw/maven
+RUN echo -e 'export MAVEN_HOME=/home/node/.openclaw/maven/apache-maven-3.8.8' >> ~/.bashrc  \
+    && echo -e 'export PATH=$MAVEN_HOME/bin:$PATH' >> ~/.bashrc  \
+    && . ~/.bashrc
 ######feature-dirtydamn end######
 
 # Start gateway server with default config.
