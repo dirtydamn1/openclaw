@@ -8,7 +8,7 @@ export OPENCLAW_HOME_VOLUME="openclaw_home"
 # 指定浏览器安装路径并确保其在持久化范围内
 export PLAYWRIGHT_BROWSERS_PATH=/home/node/.cache/ms-playwright
 # 安装额外的apt包，jq后面为browser需要的依赖，fonts-wqy-zenhei为中文字体(截图时中文不会乱码)
-export OPENCLAW_DOCKER_APT_PACKAGES="curl less vim lsof wget net-tools git jq fonts-wqy-zenhei libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxcb1 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libxfixes3 "
+export OPENCLAW_DOCKER_APT_PACKAGES="curl less vim lsof wget net-tools netcat-openbsd telnet git jq fonts-wqy-zenhei libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxcb1 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libxfixes3 "
 # 工作目录
 export OPENCLAW_CONFIG_DIR=/home/ops/.openclaw
 export OPENCLAW_WORKSPACE_DIR=/home/ops/.openclaw/workspace
