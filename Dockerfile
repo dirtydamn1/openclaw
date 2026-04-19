@@ -285,8 +285,8 @@ RUN mkdir -p "$PNPM_HOME" && chown -R node:node "$PNPM_HOME"  \
     && echo 'PATH="$PNPM_HOME:$PATH"' >> ~/.bashrc  \
     && . ~/.bashrc
 RUN pnpm config set global-bin-dir "$PNPM_HOME"
-# 安装clawhub
-RUN pnpm add -g clawhub
+# 安装clawhub和vercel-labs提供的skills
+RUN pnpm add -g clawhub skills
 # 安装jdk
 # 防止每次打包都需要下载jdk，直接进入容器安装，安装到~/.openclaw，这个目录是挂载在docker卷上的
 # mkdir -p ~/.openclaw/myDownload
