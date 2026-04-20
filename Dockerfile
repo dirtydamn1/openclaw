@@ -277,6 +277,10 @@ ENV NODE_ENV=production
 USER node
 
 ######feature-dirtydamn start######
+# 安装uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN echo 'export PATH="/home/node/.local/bin:$PATH"' >> ~/.bashrc  \
+    && . ~/.bashrc
 # 配置pnpm
 ENV PNPM_HOME="/home/node/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
