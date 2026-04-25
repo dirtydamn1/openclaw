@@ -8,5 +8,5 @@ pnpm link --global
 openclaw onboard
 
 # openclaw gateway stop
-# openclaw gateway start --port 19789
+# openclaw gateway --port 19789
 # openclaw gateway status
