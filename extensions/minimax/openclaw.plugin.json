@@ -1,43 +1,71 @@
 {
+  // 插件的唯一规范标识符（Canonical plugin id），在系统中用来代表该插件 [2]。
   "id": "minimax",
   "activation": {
     "onStartup": false
   },
+
+  // 标记此捆绑插件在默认情况下处于启用状态 [2]。
   "enabledByDefault": true,
+
+  // 遗留的插件 ID 列表。系统在遇到这些旧 ID 时，会自动将它们映射并规范化为当前的 "minimax" 插件 [2, 3]。
   "legacyPluginIds": ["minimax-portal-auth"],
+
+  // 声明本插件拥有（提供）的 Provider ID 列表。这里 minimax 提供了两种提供者变体 [3]。
   "providers": ["minimax", "minimax-portal"],
+
+  // 声明当系统配置、凭证验证或模型引用中涉及到以下 Provider ID 时，将自动激活并启用本插件 [3]。
   "autoEnableWhenConfiguredProviders": ["minimax", "minimax-portal"],
   "nonSecretAuthMarkers": ["minimax-oauth"],
+
+  // 声明用于 Provider 身份验证的环境变量。这是一个旨在让 OpenClaw 无需加载插件代码即可快速探查凭证状态的配置 [4, 5]。
+  // （注：在新版本插件开发中，推荐使用 setup.providers[].envVars，但由于兼容性，此字段仍被支持 [5]）。
   "providerAuthEnvVars": {
     "minimax": ["MINIMAX_CODE_PLAN_KEY", "MINIMAX_CODING_API_KEY", "MINIMAX_API_KEY"],
     "minimax-portal": ["MINIMAX_OAUTH_TOKEN", "MINIMAX_API_KEY"]
   },
+
+  // 为 CLI 和用户引导向导 (Onboarding) 提供的轻量级身份验证选项元数据 [5-7]。
   "providerAuthChoices": [
     {
+      // 该选项所属的具体 Provider ID [8]。
       "provider": "minimax-portal",
+      // 分派的验证方法，这里是基于网页的 oauth 授权 [8]。
       "method": "oauth",
+      // 用于 CLI 和引导流程的唯一选项 ID [8]。
       "choiceId": "minimax-global-oauth",
+      // 面向用户的选项显示标签（例如在列表中展示的名字） [8]。
       "choiceLabel": "MiniMax OAuth (Global)",
+      // 面向用户的帮助提示文本 [8]。
       "choiceHint": "Global endpoint - api.minimax.io",
+      // 用于将相关选项折叠分组的组 ID [9]。
       "groupId": "minimax",
+      // 组级别的显示标签 [9]。
       "groupLabel": "MiniMax",
+      // 组级别的提示语 [9]。
       "groupHint": "M2.7 (recommended)"
     },
     {
       "provider": "minimax",
       "method": "api-global",
       "choiceId": "minimax-global-api",
+      // 遗留选项 ID 列表。如果用户在旧版 CLI 输入了这些 ID，会被重定向到当前的 choiceId [8, 9]。
       "deprecatedChoiceIds": ["minimax", "minimax-api", "minimax-cloud", "minimax-api-lightning"],
       "choiceLabel": "MiniMax API key (Global)",
       "choiceHint": "Global endpoint - api.minimax.io",
       "groupId": "minimax",
       "groupLabel": "MiniMax",
       "groupHint": "M2.7 (recommended)",
+      // 用于简单单标志身份验证流的内部选项键 [9]。
       "optionKey": "minimaxApiKey",
+      // 为这个选项注册的命令行 (CLI) 参数标志 [9]。
       "cliFlag": "--minimax-api-key",
+      // 完整的 CLI 选项定义形状 [9]。
       "cliOption": "--minimax-api-key <key>",
+      // 在 CLI 帮助 (Help) 文档中显示的描述 [9]。
       "cliDescription": "MiniMax API key"
     },
+    // 以下两项为针对国内端点 (api.minimaxi.com) 的 OAuth 与 API Key 选项配置，结构同上。
     {
       "provider": "minimax-portal",
       "method": "oauth-cn",
@@ -64,14 +92,25 @@
       "cliDescription": "MiniMax API key"
     }
   ],
+
+  // 静态的能力所有权声明（Contracts）。
+  // 它使得 OpenClaw 在不加载插件实际代码的情况下，就能确切知道该插件到底提供了哪些能力 [6, 10, 11]。
   "contracts": {
+    // 声明本插件包含用于语音 (TTS/STT) 的提供者 [12]。
     "speechProviders": ["minimax"],
+    // 声明本插件包含媒体理解（图像/音频/视频解析）提供者 [12]。
     "mediaUnderstandingProviders": ["minimax", "minimax-portal"],
+    // 声明本插件包含图像生成提供者 [12]。
     "imageGenerationProviders": ["minimax", "minimax-portal"],
+    // 声明本插件包含音乐生成提供者 [12]。
     "musicGenerationProviders": ["minimax", "minimax-portal"],
+    // 声明本插件包含视频生成提供者 [12, 13]。
     "videoGenerationProviders": ["minimax", "minimax-portal"],
+    // 声明本插件包含网络搜索能力提供者 [13]。
     "webSearchProviders": ["minimax"]
   },
+
+  // 用于向配置系统声明运行时的路径别名或兼容路径，方便兼容不同版本的参数调用
   "configContracts": {
     "compatibilityRuntimePaths": ["tools.web.search.apiKey"]
   },
@@ -95,11 +134,17 @@
       }
     }
   },
+
+  // UI 界面提示映射。当在控制面板 (Control UI) 渲染配置表单时，提供标签和安全脱敏功能 [10, 14]。
   "uiHints": {
     "webSearch.apiKey": {
+      // 在 UI 面板中显示的字段名称 [14]。
       "label": "MiniMax Coding Plan key",
+      // UI 面板中该配置下方的帮助解释文本 [14]。
       "help": "MiniMax Coding Plan key (fallback: MINIMAX_CODE_PLAN_KEY, MINIMAX_CODING_API_KEY, or MINIMAX_API_KEY if it already points at a coding-plan token).",
+      // 将此字段标记为敏感信息。UI 在展示时会用星号隐藏实际密钥内容 [11, 14]。
       "sensitive": true,
+      // UI 表单输入框的占位符 [11]。
       "placeholder": "sk-cp-..."
     },
     "webSearch.region": {
@@ -107,8 +152,11 @@
       "help": "Search endpoint region override. Leave unset to reuse your configured MiniMax host or MINIMAX_API_HOST."
     }
   },
+
+  // 用于验证本插件专有配置 (即 plugins.entries.minimax.config 内的内容) 的内联 JSON Schema [2]。
   "configSchema": {
     "type": "object",
+    // 拒绝包含该 Schema 中未明确定义的额外属性，起严格校验作用 [2]。
     "additionalProperties": false,
     "properties": {
       "webSearch": {
@@ -116,10 +164,12 @@
         "additionalProperties": false,
         "properties": {
           "apiKey": {
+            // apiKey 既可以是普通字符串，也可以是引用环境变量/文件的 SecretRef 安全对象 [15]。
             "type": ["string", "object"]
           },
           "region": {
             "type": "string",
+            // 限制该枚举字段只能填 "global" 或 "cn"。
             "enum": ["global", "cn"]
           }
         }
