@@ -1,6 +1,9 @@
 {
   // 插件的唯一规范标识符（Canonical plugin id），在系统中用来代表该插件 [2]。
   "id": "minimax",
+  "activation": {
+    "onStartup": false
+  },
 
   // 标记此捆绑插件在默认情况下处于启用状态 [2]。
   "enabledByDefault": true,
@@ -13,11 +16,12 @@
 
   // 声明当系统配置、凭证验证或模型引用中涉及到以下 Provider ID 时，将自动激活并启用本插件 [3]。
   "autoEnableWhenConfiguredProviders": ["minimax", "minimax-portal"],
+  "nonSecretAuthMarkers": ["minimax-oauth"],
 
   // 声明用于 Provider 身份验证的环境变量。这是一个旨在让 OpenClaw 无需加载插件代码即可快速探查凭证状态的配置 [4, 5]。
   // （注：在新版本插件开发中，推荐使用 setup.providers[].envVars，但由于兼容性，此字段仍被支持 [5]）。
   "providerAuthEnvVars": {
-    "minimax": ["MINIMAX_API_KEY"],
+    "minimax": ["MINIMAX_CODE_PLAN_KEY", "MINIMAX_CODING_API_KEY", "MINIMAX_API_KEY"],
     "minimax-portal": ["MINIMAX_OAUTH_TOKEN", "MINIMAX_API_KEY"]
   },
 
@@ -99,9 +103,9 @@
     // 声明本插件包含图像生成提供者 [12]。
     "imageGenerationProviders": ["minimax", "minimax-portal"],
     // 声明本插件包含音乐生成提供者 [12]。
-    "musicGenerationProviders": ["minimax"],
+    "musicGenerationProviders": ["minimax", "minimax-portal"],
     // 声明本插件包含视频生成提供者 [12, 13]。
-    "videoGenerationProviders": ["minimax"],
+    "videoGenerationProviders": ["minimax", "minimax-portal"],
     // 声明本插件包含网络搜索能力提供者 [13]。
     "webSearchProviders": ["minimax"]
   },
@@ -109,6 +113,26 @@
   // 用于向配置系统声明运行时的路径别名或兼容路径，方便兼容不同版本的参数调用
   "configContracts": {
     "compatibilityRuntimePaths": ["tools.web.search.apiKey"]
+  },
+  "mediaUnderstandingProviderMetadata": {
+    "minimax": {
+      "capabilities": ["image"],
+      "defaultModels": {
+        "image": "MiniMax-VL-01"
+      },
+      "autoPriority": {
+        "image": 40
+      }
+    },
+    "minimax-portal": {
+      "capabilities": ["image"],
+      "defaultModels": {
+        "image": "MiniMax-VL-01"
+      },
+      "autoPriority": {
+        "image": 50
+      }
+    }
   },
 
   // UI 界面提示映射。当在控制面板 (Control UI) 渲染配置表单时，提供标签和安全脱敏功能 [10, 14]。
