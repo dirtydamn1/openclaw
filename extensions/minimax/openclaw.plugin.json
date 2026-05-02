@@ -1,14 +1,17 @@
 {
   // 插件的唯一规范标识符（Canonical plugin id），在系统中用来代表该插件 [2]。
   "id": "minimax",
+  // v2026.4.29加入，性能优化，在系统启动（Startup）过程中，不要立即完整加载并激活这个插件
   "activation": {
     "onStartup": false
   },
 
   // 标记此捆绑插件在默认情况下处于启用状态 [2]。
+  // 否则通过plugins.entries.{你的插件ID}.enabled = true启用
   "enabledByDefault": true,
 
   // 遗留的插件 ID 列表。系统在遇到这些旧 ID 时，会自动将它们映射并规范化为当前的 "minimax" 插件 [2, 3]。
+  // 兼容旧的配置(升级了但是配置还是旧的情况)，即在openclaw.json的配置中plugins.entries.{旧的插件ID}，就映射为当前插件
   "legacyPluginIds": ["minimax-portal-auth"],
 
   // 声明本插件拥有（提供）的 Provider ID 列表。这里 minimax 提供了两种提供者变体 [3]。
@@ -114,6 +117,7 @@
   "configContracts": {
     "compatibilityRuntimePaths": ["tools.web.search.apiKey"]
   },
+  // v2026.4.29加入，是 OpenClaw 插件系统的一项性能优化与自动化增强，在不加载插件运行代码的前提下，向系统提供有关“媒体理解（如识图、识音）”能力的元数据
   "mediaUnderstandingProviderMetadata": {
     "minimax": {
       "capabilities": ["image"],
