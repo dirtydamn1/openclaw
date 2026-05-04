@@ -23,7 +23,7 @@ export OPENCLAW_INSTALL_DOCKER_CLI=1
 # export OPENCLAW_SANDBOX=1
 # 额外挂载路径
 export OPENCLAW_EXTRA_MOUNTS=
-export OPENCLAW_IMAGE=v2026.4.15
+export OPENCLAW_IMAGE=v2026.5.3
 ######feature-dirtydamn end######
 
 docker compose -f docker-compose.yml -f docker-compose.extra.yml up -d openclaw-gateway
