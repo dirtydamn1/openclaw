@@ -65,7 +65,7 @@ docker_build_with_retries() {
 
   while true; do
     log_file="$(docker_e2e_run_log "$label")"
-    if "${command[@]}" >"$log_file" 2>&1; then
+    if "${command[@]}" 2>&1 | tee "$log_file"; then
       rm -f "$log_file"
       return 0
     fi
