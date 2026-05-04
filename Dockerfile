@@ -288,7 +288,7 @@ USER node
 
 ######feature-dirtydamn start######
 # 安装uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 RUN echo 'export PATH="/home/node/.local/bin:$PATH"' >> ~/.bashrc  \
     && . ~/.bashrc
 # 配置pnpm
